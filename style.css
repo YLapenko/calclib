@@ -122,5 +122,63 @@ main {
     border-radius: 4px;
 }
 
+/* Стили ползунка (тоггла) */
+.theme-switch .slider:before {
+  background-color: #fff;
+  bottom: 3px;
+  content: "";
+  height: 18px;
+  left: 4px;
+  position: absolute;
+  transition: .4s;
+  width: 18px;
+  border-radius: 50%;
+}
+
+/* Состояние, когда чекбокс активен (тёмная тема) */
+.theme-switch input:checked + .slider {
+  background-color: #4caf50; /* Цвет ползунка в активном состоянии */
+}
+
+.theme-switch input:checked + .slider:before {
+  transform: translateX(18px);
+}
+
+/* --- Переменные и стили для Тёмной Темы --- */
+body.dark-theme {
+  background-color: #121212;
+  color: #e0e0e0;
+}
+
+/* Стилизация карточек в тёмной теме */
+body.dark-theme .card {
+  background-color: #1e1e1e;
+  border-color: #333;
+  color: #e0e0e0;
+}
+
+body.dark-theme .card h3 {
+  color: #fff;
+}
+
+/* Стилизация полей ввода (поиск и теги) в тёмной теме */
+body.dark-theme #search-input,
+body.dark-theme #tag-search-input {
+  background-color: #2a2a2a;
+  color: #fff;
+  border-color: #444;
+}
+
+/* Стилизация выпадающего списка тегов в тёмной теме */
+body.dark-theme #tag-dropdown {
+  background-color: #2a2a2a !important;
+  border-color: #444 !important;
+}
+
+body.dark-theme #tag-dropdown div {
+  color: #fff !important;
+  border-bottom-color: #3a3a3a !important;
+}
+
 .no-results { text-align: center; color: #888; font-size: 1.2rem; margin-top: 3rem; }
 .hidden { display: none; }

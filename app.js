@@ -165,3 +165,34 @@ document.getElementById('search-input').addEventListener('input', renderCards);
 
 // Запуск при старте страницы
 loadCards();
+
+// Логика переключения тёмной темы
+const themeCheckbox = document.getElementById('theme-checkbox');
+const themeText = document.querySelector('.theme-text');
+
+// 1. Проверяем, была ли сохранена тема ранее
+const currentTheme = localStorage.getItem('theme');
+if (currentTheme === 'dark') {
+    document.body.classList.add('dark-theme');
+    themeCheckbox.checked = true;
+    if (themeText) themeText.textContent = '☀️'; // Меняем иконку на солнце
+}
+
+// 2. Слушатель изменения положения ползунка
+themeCheckbox.addEventListener('change', function() {
+    if (this.checked) {
+        document.body.classList.add('dark-theme');
+        localStorage.setItem('theme', 'dark');
+        if (themeText) themeText.textContent = '☀️';
+    } else {
+        document.body.classList.remove('dark-theme');
+        localStorage.setItem('theme', 'light');
+        if (themeText) themeText.textContent = '🌙';
+    }
+    
+    // Перерисовываем список тегов, чтобы обновить цвета выпадающего окна при смене темы
+    if (typeof renderTags === 'function') {
+        renderTags();
+    }
+});
+
