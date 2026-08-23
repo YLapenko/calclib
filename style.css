@@ -136,48 +136,47 @@ main {
 }
 
 /* Состояние, когда чекбокс активен (тёмная тема) */
+/* Мягкий акцент для переключателя (синий/фирменный) */
 .theme-switch input:checked + .slider {
-  background-color: #4caf50; /* Цвет ползунка в активном состоянии */
+  background-color: #3b82f6; 
 }
-
 .theme-switch input:checked + .slider:before {
   transform: translateX(18px);
 }
 
-/* --- Переменные и стили для Тёмной Темы --- */
+/* Тёмная тема с глубокими, но мягкими оттенками */
 body.dark-theme {
-  background-color: #121212;
-  color: #e0e0e0;
+  background-color: #0f172a; /* Глубокий тёмно-синий вместо чистого чёрного */
+  color: #cbd5e1; /* Приглушённый светлый для основного текста */
 }
 
-/* Стилизация карточек в тёмной теме */
+/* Карточки с эффектом объёма и мягкой тенью */
 body.dark-theme .card {
-  background-color: #1e1e1e;
-  border-color: #333;
-  color: #e0e0e0;
+  background-color: #1e293b;
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #cbd5e1;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
 }
-
 body.dark-theme .card h3 {
-  color: #fff;
+  color: #f8fafc;
 }
 
-/* Стилизация полей ввода (поиск и теги) в тёмной теме */
-body.dark-theme #search-input,
+/* Поля ввода */
+body.dark-theme #search-input, 
 body.dark-theme #tag-search-input {
-  background-color: #2a2a2a;
-  color: #fff;
-  border-color: #444;
+  background-color: #1e293b;
+  color: #f8fafc;
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
-/* Стилизация выпадающего списка тегов в тёмной теме */
+/* Выпадающий список */
 body.dark-theme #tag-dropdown {
-  background-color: #2a2a2a !important;
-  border-color: #444 !important;
+  background-color: #1e293b !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
 }
-
 body.dark-theme #tag-dropdown div {
-  color: #fff !important;
-  border-bottom-color: #3a3a3a !important;
+  color: #cbd5e1 !important;
+  border-bottom-color: rgba(255, 255, 255, 0.06) !important;
 }
 
 .no-results { text-align: center; color: #888; font-size: 1.2rem; margin-top: 3rem; }
