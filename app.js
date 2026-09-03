@@ -18,10 +18,10 @@ async function loadCards() {
     }
 }
 
-// 2. Вывод карточек на страницу
+// 2. Вывод карточек на страницу (Обновленная версия)
 function renderCards() {
     const grid = document.getElementById('cards-grid');
-    const searchValues = document.getElementById('search-input').value.toLowerCase();
+    const searchValues = document.getElementById('search-input').value.toLowerCase().trim();
     grid.innerHTML = '';
     
     const filtered = allCards.filter(card => {
@@ -38,21 +38,49 @@ function renderCards() {
     }
 
     filtered.forEach(card => {
-        const cardEl = document.createElement('a');
+        // Создаем элемент карточки
+        const cardEl = document.createElement('div');
         cardEl.className = 'card';
-        cardEl.href = card.url;
-        cardEl.target = '_blank'; // открывать в новой вкладке
         
-        const tagsHtml = card.tags.map(t => `<span class="card-tag">${t}</span>`).join('');
+        // Рендерим внутренности карточки. Обратите внимание: теги теперь <button>
+        const tagsHtml = card.tags.map(t => `<button class="card-tag" data-tag="${t}">${t}</button>`).join('');
         
         cardEl.innerHTML = `
-            <h3>${card.title}</h3>
-            <p>${card.description}</p>
+            <a href="${card.url}" target="_blank" class="card-link">
+                <h3>${card.title}</h3>
+                <p>${card.description}</p>
+            </a>
             <div class="card-tags">${tagsHtml}</div>
         `;
+
+        // Вешаем событие клика на теги ВНУТРИ карточки
+        cardEl.querySelectorAll('.card-tag').forEach(tagButton => {
+            tagButton.addEventListener('click', (e) => {
+                e.preventDefault(); // Предотвращаем любые лишние действия
+                
+                const clickedTag = e.target.getAttribute('data-tag');
+                const tagInput = document.getElementById('tag-search-input');
+
+                // Устанавливаем выбранный тег
+                selectedTag = clickedTag;
+                
+                // Записываем название тега в инпут поиска по тегам
+                if (tagInput) {
+                    tagInput.value = clickedTag;
+                }
+
+                // Плавно скроллим страницу наверх к каталогу
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+
+                // Перерисовываем карточки с новым фильтром
+                renderCards();
+            });
+        });
+
         grid.appendChild(cardEl);
     });
 }
+
 
 // 3. Сбор уникальных тегов и настройка окна поиска по тегам
 function renderTags() {
@@ -64,19 +92,11 @@ function renderTags() {
     allCards.forEach(card => card.tags.forEach(tag => allTagsSet.add(tag)));
     const allTags = Array.from(allTagsSet);
 
-    // Очищаем контейнер и создаем структуру поиска внутри него
+    // Очищаем контейнер и создаем структуру поиска (ИНЛАЙН-СТИЛИ УДАЛЕНЫ!)
     tagsContainer.innerHTML = `
-        <div class="tag-search-box" style="position: relative; max-width: 300px; margin: 0 auto 20px;">
-            <input 
-                type="text" 
-                id="tag-search-input" 
-                placeholder="Поиск по тегам..." 
-                style="width: 100%; padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;"
-            >
-            <div 
-                id="tag-dropdown" 
-                style="position: absolute; width: 100%; max-height: 200px; overflow-y: auto; background: white; border: 1px solid #ccc; border-top: none; display: none; z-index: 1000; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-radius: 0 0 4px 4px;"
-            ></div>
+        <div class="tag-search-box">
+            <input type="text" id="tag-search-input" placeholder="Поиск по тегам...">
+            <div id="tag-dropdown" class="tag-dropdown-list"></div>
         </div>
     `;
 
@@ -94,33 +114,25 @@ function renderTags() {
 
         filteredTags.forEach(tag => {
             const item = document.createElement('div');
+            item.className = 'dropdown-item';
             item.textContent = tag;
-            item.style.padding = '8px 12px';
-            item.style.cursor = 'pointer';
-            item.style.color = '#333';
-            item.style.borderBottom = '1px solid #f0f0f0';
             
-            // Если этот тег сейчас выбран, выделим его визуально
+            // Если этот тег сейчас выбран, добавляем класс активности
             if (selectedTag === tag) {
-                item.style.backgroundColor = '#e0e0e0';
-                item.style.fontWeight = 'bold';
+                item.classList.add('selected');
             }
-
-            // Подсветка при наведении
-            item.onmouseenter = () => item.style.backgroundColor = '#f5f5f5';
-            item.onmouseleave = () => item.style.backgroundColor = (selectedTag === tag) ? '#e0e0e0' : 'transparent';
 
             // Клик по тегу из списка
             item.addEventListener('click', () => {
                 if (selectedTag === tag) {
-                    selectedTag = null; // Сброс, если кликнули на уже выбранный
+                    selectedTag = null; // Сброс
                     tagInput.value = '';
                 } else {
-                    selectedTag = tag;  // Выбираем новый тег
-                    tagInput.value = tag; // Записываем его в поле
+                    selectedTag = tag;  // Выбор нового
+                    tagInput.value = tag;
                 }
                 tagDropdown.style.display = 'none';
-                renderCards(); // Перерисовываем карточки (ваша функция)
+                renderCards(); 
             });
 
             tagDropdown.appendChild(item);
@@ -134,13 +146,12 @@ function renderTags() {
         const query = e.target.value.toLowerCase().trim();
         
         if (!query) {
-            selectedTag = null; // Если стерли текст — сбрасываем фильтр по тегам
+            selectedTag = null; 
             tagDropdown.style.display = 'none';
             renderCards();
             return;
         }
 
-        // Фильтруем теги по вхождению строки
         const matchedTags = allTags.filter(tag => tag.toLowerCase().includes(query));
         showDropdown(matchedTags);
     });
@@ -175,7 +186,7 @@ const currentTheme = localStorage.getItem('theme');
 if (currentTheme === 'dark') {
     document.body.classList.add('dark-theme');
     themeCheckbox.checked = true;
-    if (themeText) themeText.textContent = '☀️'; // Меняем иконку на солнце
+    if (themeText) themeText.textContent = '☀️';
 }
 
 // 2. Слушатель изменения положения ползунка
@@ -190,9 +201,4 @@ themeCheckbox.addEventListener('change', function() {
         if (themeText) themeText.textContent = '🌙';
     }
     
-    // Перерисовываем список тегов, чтобы обновить цвета выпадающего окна при смене темы
-    if (typeof renderTags === 'function') {
-        renderTags();
-    }
 });
-

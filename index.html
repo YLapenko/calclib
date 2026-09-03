@@ -3,24 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Каталог Расчетов</title>
+    <title>Каталог Онлайн Расчетов</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- Переключатель темы (теперь фиксированный и поверх всего) -->
-    <div class="theme-switch-wrapper" style="position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; align-items: center; gap: 8px; background: rgba(128, 128, 128, 0.15); padding: 6px 10px; border-radius: 20px; backdrop-filter: blur(4px);">
-        <span style="font-size: 14px; font-family: sans-serif; user-select: none;" class="theme-text">🌙</span>
-        <label class="theme-switch" style="display: inline-block; height: 24px; position: relative; width: 44px; margin: 0;">
-            <input type="checkbox" id="theme-checkbox" style="display:none;">
-            <div class="slider" style="background-color: #ccc; bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; border-radius: 34px;"></div>
+    <!-- Переключатель темы (Стили перенесены в CSS, добавлен класс theme-switch) -->
+    <div class="theme-switch-wrapper">
+        <span class="theme-text" role="img" aria-label="Темная тема">🌙</span>
+        <label class="theme-switch">
+            <input type="checkbox" id="theme-checkbox">
+            <div class="slider"></div>
         </label>
     </div>
 
     <header>
         <h1>Каталог Онлайн Расчетов</h1>
         <div class="search-container">
-            <input type="text" id="search-input" placeholder="Поиск по названию или описанию...">
+            <!-- Добавлен тип search для удобства очистки поля на смартфонах -->
+            <input type="search" id="search-input" placeholder="Поиск по названию или описанию...">
         </div>
         <div id="tags-container" class="tags-filter">
             <!-- Теги добавятся автоматически через JS -->
