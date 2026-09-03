@@ -295,3 +295,30 @@ main {
     color: white !important;
     font-weight: bold;
 }
+
+/* Кнопка сброса фильтров */
+.reset-btn {
+    display: inline-block;
+    margin: 0.5rem auto 1rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    background-color: transparent;
+    color: var(--text-muted);
+    border: 1px dashed var(--text-muted);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* Эффект наведения (кнопка окрашивается в акцентный цвет) */
+.reset-btn:hover {
+    color: #ef4444; /* Мягкий красный цвет для индикации отмены */
+    border-color: #ef4444;
+    background-color: rgba(239, 68, 68, 0.05);
+}
+
+/* Ограничение для удержания структуры */
+.hidden {
+    display: none !important;
+}

@@ -18,7 +18,7 @@ async function loadCards() {
     }
 }
 
-// 2. Вывод карточек на страницу (Обновленная версия)
+// 2. Вывод карточек на страницу
 function renderCards() {
     const grid = document.getElementById('cards-grid');
     const searchValues = document.getElementById('search-input').value.toLowerCase().trim();
@@ -30,6 +30,18 @@ function renderCards() {
         const matchesTag = !selectedTag || card.tags.includes(selectedTag);
         return matchesSearch && matchesTag;
     });
+
+    // --- Управление кнопкой сброса ---
+    const resetBtn = document.getElementById('reset-filters-btn');
+    if (resetBtn) {
+        // Кнопка показывается, если в поиске есть текст ИЛИ если выбран какой-либо тег
+        if (searchValues.length > 0 || selectedTag !== null) {
+            resetBtn.classList.remove('hidden');
+        } else {
+            resetBtn.classList.add('hidden');
+        }
+    }
+    // --------------------------------------------------
 
     if (filtered.length === 0) {
         document.getElementById('no-results').classList.remove('hidden');
@@ -173,6 +185,24 @@ function renderTags() {
 
 // Слушатель ввода в поисковую строку
 document.getElementById('search-input').addEventListener('input', renderCards);
+
+// Логика сброса всех фильтров при клике
+document.getElementById('reset-filters-btn').addEventListener('click', () => {
+    // 1. Очищаем текстовый поиск калькуляторов
+    document.getElementById('search-input').value = '';
+    
+    // 2. Сбрасываем выбранный тег в памяти
+    selectedTag = null;
+    
+    // 3. Очищаем поле поиска по тегам, если оно существует в DOM
+    const tagInput = document.getElementById('tag-search-input');
+    if (tagInput) {
+        tagInput.value = '';
+    }
+    
+    // 4. Перерисовываем карточки (кнопка сброса исчезнет сама)
+    renderCards();
+});
 
 // Запуск при старте страницы
 loadCards();

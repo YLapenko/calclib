@@ -20,9 +20,13 @@
     <header>
         <h1>Каталог Онлайн Расчетов</h1>
         <div class="search-container">
-            <!-- Добавлен тип search для удобства очистки поля на смартфонах -->
+            <!-- Тип search для удобства очистки поля на смартфонах -->
             <input type="search" id="search-input" placeholder="Поиск по названию или описанию...">
         </div>
+
+        <!-- Кнопка сброса всех фильтров -->
+        <button id="reset-filters-btn" class="reset-btn hidden">✕ Сбросить все фильтры</button>
+        
         <div id="tags-container" class="tags-filter">
             <!-- Теги добавятся автоматически через JS -->
         </div>
