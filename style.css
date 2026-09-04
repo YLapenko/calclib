@@ -322,3 +322,48 @@ main {
 .hidden {
     display: none !important;
 }
+
+/* Выравнивание элементов внизу карточки */
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+    padding-top: 1rem;
+    gap: 10px;
+}
+
+/* Стилизация кнопки жалобы */
+.report-broken-btn {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px dashed var(--border-color);
+    padding: 4px 8px;
+    font-size: 0.7rem;
+    border-radius: 6px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+/* Наведение на кнопку */
+.report-broken-btn:hover:not(:disabled) {
+    color: #f59e0b; /* Вспыхивает предупреждающим оранжевым цветом */
+    border-color: #f59e0b;
+    background-color: rgba(245, 158, 11, 0.05);
+}
+
+/* Состояние успешной отправки */
+.report-broken-btn.success {
+    color: #10b981 !important; /* Зеленый цвет */
+    border-color: #10b981 !important;
+    background-color: rgba(16, 185, 129, 0.05) !important;
+    cursor: default;
+}
+
+/* Состояние блокировки во время отправки */
+.report-broken-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+

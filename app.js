@@ -1,6 +1,9 @@
 let allCards = [];
 let selectedTag = null;
 
+// Подключение GOOGLE ТАБЛИЦ для записи ошибок
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwBu3usMJbb2qBgD_LDBYYqElrG8V8naJKqIunC8yteu1pByf4V2lNfNoN0qFo02WP9/exec'; //
+
 // 1. Загружаем индексный список, а затем все файлы карточек
 async function loadCards() {
     try {
@@ -34,7 +37,6 @@ function renderCards() {
     // --- Управление кнопкой сброса ---
     const resetBtn = document.getElementById('reset-filters-btn');
     if (resetBtn) {
-        // Кнопка показывается, если в поиске есть текст ИЛИ если выбран какой-либо тег
         if (searchValues.length > 0 || selectedTag !== null) {
             resetBtn.classList.remove('hidden');
         } else {
@@ -54,40 +56,71 @@ function renderCards() {
         const cardEl = document.createElement('div');
         cardEl.className = 'card';
         
-        // Рендерим внутренности карточки. Обратите внимание: теги теперь <button>
         const tagsHtml = card.tags.map(t => `<button class="card-tag" data-tag="${t}">${t}</button>`).join('');
         
+        // Рендерим внутренности. Добавлена кнопка сообщения об ошибке
         cardEl.innerHTML = `
             <a href="${card.url}" target="_blank" class="card-link">
                 <h3>${card.title}</h3>
                 <p>${card.description}</p>
             </a>
-            <div class="card-tags">${tagsHtml}</div>
+            <div class="card-footer">
+                <div class="card-tags">${tagsHtml}</div>
+                <button class="report-broken-btn" title="Ссылка не работает?">⚠️ Ссылка не работает</button>
+            </div>
         `;
 
         // Вешаем событие клика на теги ВНУТРИ карточки
         cardEl.querySelectorAll('.card-tag').forEach(tagButton => {
             tagButton.addEventListener('click', (e) => {
-                e.preventDefault(); // Предотвращаем любые лишние действия
-                
+                e.preventDefault();
                 const clickedTag = e.target.getAttribute('data-tag');
                 const tagInput = document.getElementById('tag-search-input');
-
-                // Устанавливаем выбранный тег
                 selectedTag = clickedTag;
-                
-                // Записываем название тега в инпут поиска по тегам
-                if (tagInput) {
-                    tagInput.value = clickedTag;
-                }
-
-                // Плавно скроллим страницу наверх к каталогу
+                if (tagInput) { tagInput.value = clickedTag; }
                 window.scrollTo({ top: 0, behavior: 'smooth' });
-
-                // Перерисовываем карточки с новым фильтром
                 renderCards();
             });
         });
+
+                // --- ЛОГИКА КНОПКИ ЖАЛОБЫ НА ССЫЛКУ (ОТПРАВКА В GOOGLE ТАБЛИЦУ) ---
+        const reportBtn = cardEl.querySelector('.report-broken-btn');
+        reportBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            
+            // Защита от повторных нажатий
+            if (reportBtn.disabled) return;
+            
+            reportBtn.disabled = true;
+            reportBtn.textContent = '⏳ Отправка...';
+
+            try {
+                // Отправляем данные на Google Script
+                await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // Важно: обходит ограничения безопасности CORS браузера
+                    headers: { 
+                        'Content-Type': 'application/json' 
+                    },
+                    body: JSON.stringify({
+                        title: card.title,
+                        url: card.url
+                    })
+                });
+
+                // Так как мы используем режим 'no-cors', браузер возвращает непрозрачный (opaque) ответ.
+                // Мы не можем прочитать статус ответа (response.ok всегда false, а статус 0),
+                // но если fetch не выкинул ошибку в блок catch — значит, запрос успешно улетел на сервер Google.
+                reportBtn.textContent = '✅ Отправлено!';
+                reportBtn.classList.add('success');
+
+            } catch (error) {
+                console.error('Не удалось отправить уведомление в Google:', error);
+                reportBtn.textContent = '❌ Ошибка';
+                reportBtn.disabled = false; // Возвращаем кнопку в рабочее состояние для повторной попытки
+            }
+        });
+        // -----------------------------------------------------------------
 
         grid.appendChild(cardEl);
     });
