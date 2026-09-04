@@ -64,10 +64,8 @@ function renderCards() {
                 <h3>${card.title}</h3>
                 <p>${card.description}</p>
             </a>
-            <div class="card-footer">
-                <div class="card-tags">${tagsHtml}</div>
-                <button class="report-broken-btn" title="Ссылка не работает?">⚠️ Ссылка не работает</button>
-            </div>
+            <div class="card-tags">${tagsHtml}</div>
+            <button class="report-broken-btn" title="Ссылка не работает?">⚠️ Ссылка не работает</button>
         `;
 
         // Вешаем событие клика на теги ВНУТРИ карточки
