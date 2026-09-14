@@ -1,4 +1,23 @@
 [
-  "pavement.json",
-  "сlimate map.json"
+"road_сlimate_map_techno.json",
+"energy.json",
+"estimate-service.json",
+"facade_insulation.json",
+"fire_protection_mat.json",
+"heat-protection.json",
+"load_wind_map.json",
+"otmostka.json",
+"pavement.json",
+"pipe_insulation_tex.json",
+"pipeline_insulation.json",
+"road-strength.json",
+"roof_flat.json",
+"roof_funnel.json",
+"roof_slope_mat.json",
+"roof_wind_load.json",
+"sound_insulation.json",
+"termal_protection.json",
+"windows_installation_depth.json",
+"wooden_beam.json",
+"сlimate_map_Panchik.json"
 ]
