@@ -1,5 +1,4 @@
 [
-  "road_сlimate_map_techno.json",
   "energy.json",
   "estimate-service.json",
   "facade_insulation.json",
@@ -11,10 +10,11 @@
   "pipe_insulation_tex.json",
   "pipeline_insulation.json",
   "road-strength.json",
-  "roof_flat.json",
+  "road_сlimate_map_techno.json",
   "roof_funnel.json",
   "roof_slope_mat.json",
   "roof_wind_load.json",
+  "roof_flat.json",
   "sound_insulation.json",
   "termal_protection.json",
   "windows_installation_depth.json",
