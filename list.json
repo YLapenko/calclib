@@ -4,7 +4,6 @@
   "facade_insulation.json",
   "fire_protection_mat.json",
   "heat-protection.json",
-  "load_wind_map.json",
   "otmostka.json",
   "pavement.json",
   "pipe_insulation_tex.json",
@@ -19,5 +18,10 @@
   "termal_protection.json",
   "windows_installation_depth.json",
   "wooden_beam.json",
-  "сlimate_map_Panchik.json"
+  "сlimate_map_Techno.json",
+  "сlimate_map_Panchik.json",
+  "load_snow_norm_map.json",
+  "load_wind_map.json",
+  "load_snow_map.json",
+  "rain_intensity.json"
 ]
