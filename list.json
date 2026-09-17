@@ -23,5 +23,12 @@
   "load_snow_norm_map.json",
   "load_wind_map.json",
   "load_snow_map.json",
-  "rain_intensity.json"
+  "rain_intensity.json",
+  "foundation_lenta.json",
+  "foundation_stolb.json",
+  "foundation_svajazab.json",
+  "metal_armirovanie_ankerovka.json",
+  "steel_beam_one.json",
+  "vent_aerodin.json",
+  "teplopoteri.json"
 ]
