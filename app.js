@@ -25,9 +25,19 @@ function renderCards() {
     grid.innerHTML = '';
     
     const filtered = allCards.filter(card => {
-        const matchesSearch = card.title.toLowerCase().includes(searchValues) || 
-                              card.description.toLowerCase().includes(searchValues);
+        // Проверяем совпадение в названии или описании
+        const matchesTitleOrDesc = card.title.toLowerCase().includes(searchValues) || 
+                                   card.description.toLowerCase().includes(searchValues);
+        
+        // Проверяем, содержит ли хотя бы один тег карточки поисковый запрос
+        const matchesCardTags = card.tags.some(tag => tag.toLowerCase().includes(searchValues));
+        
+        // Общее совпадение для текстового поиска (название, описание ИЛИ теги)
+        const matchesSearch = matchesTitleOrDesc || matchesCardTags;
+        
+        // Фильтрация по выбранному в окне тегов элементу
         const matchesTag = !selectedTag || card.tags.includes(selectedTag);
+        
         return matchesSearch && matchesTag;
     });
 
@@ -96,6 +106,7 @@ function renderTags() {
     const allTagsSet = new Set();
     allCards.forEach(card => card.tags.forEach(tag => allTagsSet.add(tag)));
     const allTags = Array.from(allTagsSet);
+    allTags.sort((a, b) => a.localeCompare(b)); // Сортируем теги по алфавиту (с корректной поддержкой кириллицы) 
 
     // Очищаем контейнер и создаем структуру поиска (ИНЛАЙН-СТИЛИ УДАЛЕНЫ!)
     tagsContainer.innerHTML = `
