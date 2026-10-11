@@ -31,7 +31,23 @@ body {
     margin: 0;
     padding: 0;
     transition: background-color 0.3s, color 0.3s;
+    
+    /* Добавляем эти три строки для прижатия футера */
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
+
+/* Растягиваем главный контент, чтобы он выталкивал футер вниз */
+main {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    flex-grow: 1; /* Эта строка заставит контент занять всё свободное место */
+    width: 100%;
+    box-sizing: border-box;
+}
+
 
 header {
     background-color: var(--header-bg);
@@ -330,4 +346,83 @@ main {
 /* Ограничение для удержания структуры */
 .hidden {
     display: none !important;
+}
+
+/* Подсветка активного тега прямо внутри карточки */
+.card-tag.active-tag {
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: bold;
+}
+
+/* --- Стили подвала (Footer) --- */
+footer {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    border-top: 1px solid var(--border-color);
+    padding: 3rem 1rem 1.5rem;
+    margin-top: 5rem; /* Отступ от сетки с карточками */
+    transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    justify-content: space-between;
+}
+
+.footer-section {
+    flex: 1;
+    min-width: 250px; /* Чтобы секции красиво переносились на смартфонах */
+}
+
+.footer-section h4 {
+    color: var(--primary-color);
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.footer-section p {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--text-muted);
+}
+
+.footer-section ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-section ul li {
+    margin-bottom: 0.5rem;
+}
+
+.footer-section a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.2s ease;
+}
+
+.footer-section a:hover {
+    color: var(--primary-color);
+}
+
+.footer-bottom {
+    max-width: 1200px;
+    margin: 2rem auto 0;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+}
+
+.footer-bottom p {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 0;
 }

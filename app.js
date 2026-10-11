@@ -1,42 +1,50 @@
 let allCards = [];
 let selectedTag = null;
 
-// 1. Загружаем индексный список, а затем все файлы карточек
+// 1. Загружаем индексный список, а затем файлы карточек с защитой от единичных ошибок
 async function loadCards() {
     try {
         const response = await fetch('list.json');
+        if (!response.ok) throw new Error('Не удалось загрузить list.json');
         const cardFiles = await response.json();
         
-        // Загружаем каждый json-файл из папки cards параллельно
-        const promises = cardFiles.map(file => fetch(`cards/${file}`).then(res => res.json()));
-        allCards = await Promise.all(promises);
+        // Используем Promise.allSettled, чтобы битый файл одной карточки не ломал весь сайт
+        const results = await Promise.allSettled(
+            cardFiles.map(file => fetch(`cards/${file}`).then(res => {
+                if (!res.ok) throw new Error(`Ошибка загрузки ${file}`);
+                return res.json();
+            }))
+        );
+        
+        // Собираем только успешно загруженные карточки
+        allCards = results
+            .filter(result => result.status === 'fulfilled')
+            .map(result => result.value);
         
         renderTags();
         renderCards();
     } catch (error) {
-        console.error('Ошибка загрузки карточек:', error);
+        console.error('Критическая ошибка загрузки данных:', error);
+        const grid = document.getElementById('cards-grid');
+        if (grid) grid.innerHTML = '<p style="text-align:center;">Ошибка загрузки каталога. Попробуйте обновить страницу.</p>';
     }
 }
 
 // 2. Вывод карточек на страницу
 function renderCards() {
     const grid = document.getElementById('cards-grid');
-    const searchValues = document.getElementById('search-input').value.toLowerCase().trim();
+    if (!grid) return;
+    
+    const searchValues = document.getElementById('search-input')?.value.toLowerCase().trim() || '';
     grid.innerHTML = '';
     
     const filtered = allCards.filter(card => {
-        // Проверяем совпадение в названии или описании
-        const matchesTitleOrDesc = card.title.toLowerCase().includes(searchValues) || 
-                                   card.description.toLowerCase().includes(searchValues);
+        const matchesTitleOrDesc = card.title?.toLowerCase().includes(searchValues) || 
+                                   card.description?.toLowerCase().includes(searchValues);
         
-        // Проверяем, содержит ли хотя бы один тег карточки поисковый запрос
-        const matchesCardTags = card.tags.some(tag => tag.toLowerCase().includes(searchValues));
-        
-        // Общее совпадение для текстового поиска (название, описание ИЛИ теги)
+        const matchesCardTags = card.tags?.some(tag => tag.toLowerCase().includes(searchValues));
         const matchesSearch = matchesTitleOrDesc || matchesCardTags;
-        
-        // Фильтрация по выбранному в окне тегов элементу
-        const matchesTag = !selectedTag || card.tags.includes(selectedTag);
+        const matchesTag = !selectedTag || card.tags?.includes(selectedTag);
         
         return matchesSearch && matchesTag;
     });
@@ -50,21 +58,22 @@ function renderCards() {
             resetBtn.classList.add('hidden');
         }
     }
-    // --------------------------------------------------
 
-    if (filtered.length === 0) {
-        document.getElementById('no-results').classList.remove('hidden');
-    } else {
-        document.getElementById('no-results').classList.add('hidden');
+    // --- Показ сообщения "Ничего не найдено" ---
+    const noResults = document.getElementById('no-results');
+    if (noResults) {
+        if (filtered.length === 0) {
+            noResults.classList.remove('hidden');
+        } else {
+            noResults.classList.add('hidden');
+        }
     }
 
     filtered.forEach(card => {
-        // Создаем элемент карточки
         const cardEl = document.createElement('div');
         cardEl.className = 'card';
         
-        // Рендерим внутренности карточки без лишних кнопок
-        const tagsHtml = card.tags.map(t => `<button class="card-tag" data-tag="${t}">${t}</button>`).join('');
+        const tagsHtml = card.tags?.map(t => `<button class="card-tag ${selectedTag === t ? 'active-tag' : ''}" data-tag="${t}">${t}</button>`).join('') || '';
         
         cardEl.innerHTML = `
             <a href="${card.url}" target="_blank" class="card-link">
@@ -74,18 +83,20 @@ function renderCards() {
             <div class="card-tags">${tagsHtml}</div>
         `;
 
-        // Вешаем событие клика на теги ВНУТРИ карточки
+        // Клик по тегам внутри карточки (теперь с возможностью сброса)
         cardEl.querySelectorAll('.card-tag').forEach(tagButton => {
             tagButton.addEventListener('click', (e) => {
                 e.preventDefault();
-                
                 const clickedTag = e.target.getAttribute('data-tag');
                 const tagInput = document.getElementById('tag-search-input');
 
-                selectedTag = clickedTag;
-                
-                if (tagInput) {
-                    tagInput.value = clickedTag;
+                // Если кликнули по уже выбранному тегу — сбрасываем его
+                if (selectedTag === clickedTag) {
+                    selectedTag = null;
+                    if (tagInput) tagInput.value = '';
+                } else {
+                    selectedTag = clickedTag;
+                    if (tagInput) tagInput.value = clickedTag;
                 }
 
                 window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -97,21 +108,18 @@ function renderCards() {
     });
 }
 
-// 3. Сбор уникальных тегов и настройка окна поиска по тегам
+// 3. Окно поиска по тегам
 function renderTags() {
     const tagsContainer = document.getElementById('tags-container');
     if (!tagsContainer) return;
 
-    // Сбор уникальных тегов из загруженных карточек
     const allTagsSet = new Set();
-    allCards.forEach(card => card.tags.forEach(tag => allTagsSet.add(tag)));
-    const allTags = Array.from(allTagsSet);
-    allTags.sort((a, b) => a.localeCompare(b)); // Сортируем теги по алфавиту (с корректной поддержкой кириллицы) 
+    allCards.forEach(card => card.tags?.forEach(tag => allTagsSet.add(tag)));
+    const allTags = Array.from(allTagsSet).sort((a, b) => a.localeCompare(b)); 
 
-    // Очищаем контейнер и создаем структуру поиска (ИНЛАЙН-СТИЛИ УДАЛЕНЫ!)
     tagsContainer.innerHTML = `
         <div class="tag-search-box">
-            <input type="text" id="tag-search-input" placeholder="Поиск по тегам...">
+            <input type="text" id="tag-search-input" placeholder="Поиск по тегам..." autocomplete="off">
             <div id="tag-dropdown" class="tag-dropdown-list"></div>
         </div>
     `;
@@ -119,7 +127,6 @@ function renderTags() {
     const tagInput = document.getElementById('tag-search-input');
     const tagDropdown = document.getElementById('tag-dropdown');
 
-    // Функция отрисовки элементов внутри выпадающего списка
     function showDropdown(filteredTags) {
         tagDropdown.innerHTML = '';
         
@@ -131,20 +138,17 @@ function renderTags() {
         filteredTags.forEach(tag => {
             const item = document.createElement('div');
             item.className = 'dropdown-item';
+            if (selectedTag === tag) item.classList.add('selected');
             item.textContent = tag;
             
-            // Если этот тег сейчас выбран, добавляем класс активности
-            if (selectedTag === tag) {
-                item.classList.add('selected');
-            }
-
-            // Клик по тегу из списка
-            item.addEventListener('click', () => {
+            // Используем mousedown вместо click, чтобы событие успевало отработать до focusout/blur
+            item.addEventListener('mousedown', (e) => {
+                e.preventDefault(); // Предотвращаем потерю фокуса с инпута
                 if (selectedTag === tag) {
-                    selectedTag = null; // Сброс
+                    selectedTag = null;
                     tagInput.value = '';
                 } else {
-                    selectedTag = tag;  // Выбор нового
+                    selectedTag = tag;
                     tagInput.value = tag;
                 }
                 tagDropdown.style.display = 'none';
@@ -157,29 +161,25 @@ function renderTags() {
         tagDropdown.style.display = 'block';
     }
 
-    // Обработка ввода в поле тегов
     tagInput.addEventListener('input', (e) => {
         const query = e.target.value.toLowerCase().trim();
-        
         if (!query) {
             selectedTag = null; 
             tagDropdown.style.display = 'none';
             renderCards();
             return;
         }
-
         const matchedTags = allTags.filter(tag => tag.toLowerCase().includes(query));
         showDropdown(matchedTags);
     });
 
-    // Показываем весь список тегов при фокусе на пустом поле
     tagInput.addEventListener('focus', () => {
         if (!tagInput.value.trim()) {
             showDropdown(allTags);
         }
     });
 
-    // Закрытие списка при клике в любое другое место сайта
+    // Надежное закрытие списка при потере фокуса или клике вне элемента
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.tag-search-box')) {
             tagDropdown.style.display = 'none';
@@ -187,44 +187,40 @@ function renderTags() {
     });
 }
 
-// Слушатель ввода в поисковую строку
-document.getElementById('search-input').addEventListener('input', renderCards);
+// Функция задержки (Debounce) для оптимизации поиска при вводе
+function debounce(func, timeout = 200) {
+    let timer;
+    return (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => { func.apply(this, args); }, timeout);
+    };
+}
 
-// Логика сброса всех фильтров при клике
-document.getElementById('reset-filters-btn').addEventListener('click', () => {
-    // 1. Очищаем текстовый поиск калькуляторов
-    document.getElementById('search-input').value = '';
-    
-    // 2. Сбрасываем выбранный тег в памяти
+document.getElementById('search-input')?.addEventListener('input', debounce(renderCards));
+
+document.getElementById('reset-filters-btn')?.addEventListener('click', () => {
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) searchInput.value = '';
     selectedTag = null;
-    
-    // 3. Очищаем поле поиска по тегам, если оно существует в DOM
     const tagInput = document.getElementById('tag-search-input');
-    if (tagInput) {
-        tagInput.value = '';
-    }
-    
-    // 4. Перерисовываем карточки (кнопка сброса исчезнет сама)
+    if (tagInput) tagInput.value = '';
     renderCards();
 });
 
-// Запуск при старте страницы
+// Запуск
 loadCards();
 
-// Логика переключения тёмной темы
+// Тёмная тема
 const themeCheckbox = document.getElementById('theme-checkbox');
 const themeText = document.querySelector('.theme-text');
 
-// 1. Проверяем, была ли сохранена тема ранее
-const currentTheme = localStorage.getItem('theme');
-if (currentTheme === 'dark') {
+if (localStorage.getItem('theme') === 'dark' && themeCheckbox) {
     document.body.classList.add('dark-theme');
     themeCheckbox.checked = true;
     if (themeText) themeText.textContent = '☀️';
 }
 
-// 2. Слушатель изменения положения ползунка
-themeCheckbox.addEventListener('change', function() {
+themeCheckbox?.addEventListener('change', function() {
     if (this.checked) {
         document.body.classList.add('dark-theme');
         localStorage.setItem('theme', 'dark');
@@ -234,5 +230,4 @@ themeCheckbox.addEventListener('change', function() {
         localStorage.setItem('theme', 'light');
         if (themeText) themeText.textContent = '🌙';
     }
-    
 });
