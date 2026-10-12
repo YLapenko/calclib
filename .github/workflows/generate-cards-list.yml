@@ -1,0 +1,110 @@
+name: Validate and Generate Cards List
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'cards/**'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. Скачиваем актуальный код репозитория
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    # 2. Устанавливаем Node.js
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    # 3. Проверяем структуру и синтаксис JSON-файлов карточек
+    - name: Validate JSON Schema and Syntax
+      run: |
+        node -e "
+        const fs = require('fs');
+        const path = require('path');
+        const cardsDir = './cards';
+        
+        if (!fs.existsSync(cardsDir)) {
+            console.log('Папка cards не найдена. Пропускаем валидацию.');
+            process.exit(0);
+        }
+        
+        const files = fs.readdirSync(cardsDir).filter(file => file.endsWith('.json'));
+        let hasErrors = false;
+        const requiredFields = ['title', 'description', 'url', 'tags'];
+        
+        files.forEach(file => {
+            const filePath = path.join(cardsDir, file);
+            const content = fs.readFileSync(filePath, 'utf8');
+            
+            // 1. Проверяем синтаксис (запятые, кавычки и т.д.)
+            let data;
+            try {
+                data = JSON.parse(content);
+            } catch (err) {
+                console.error('❌ Ошибка синтаксиса в файле ' + file + ': ' + err.message);
+                hasErrors = true;
+                return;
+            }
+            
+            // 2. Проверяем наличие обязательных полей
+            requiredFields.forEach(field => {
+                if (!data[field]) {
+                    console.error('❌ Ошибка структуры в файле ' + file + ': отсутствует обязательное поле \"' + field + '\"');
+                    hasErrors = true;
+                }
+            });
+            
+            // 3. Дополнительно проверяем, что теги — это массив
+            if (data.tags && !Array.isArray(data.tags)) {
+                console.error('❌ Ошибка структуры в файле ' + file + ': поле \"tags\" должно быть массивом строк');
+                hasErrors = true;
+            }
+        });
+        
+        if (hasErrors) {
+            console.error('\n🛑 Валидация провалена. Исправьте ошибки в JSON файлах перед пушем.');
+            process.exit(1); // Останавливает выполнение экшена с ошибкой
+        }
+        
+        console.log('✅ Все JSON файлы успешно прошли проверку!');
+        "
+
+    # 4. Если проверка прошла успешно — сканируем папку cards и перезаписываем list.json
+    - name: Generate list.json
+      run: |
+        node -e "
+        const fs = require('fs');
+        const cardsDir = './cards';
+        
+        const files = fs.readdirSync(cardsDir)
+                        .filter(file => file.endsWith('.json'))
+                        .sort();
+                        
+        fs.writeFileSync('./list.json', JSON.stringify(files, null, 2));
+        console.log('Файл list.json успешно обновлен! Компилируем изменения...');
+        "
+
+    # 5. Проверяем изменения и отправляем list.json в репозиторий
+    - name: Commit and Push changes
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "41898282+github-actions[bot]@://github.com"
+        
+        git add list.json
+        
+        if git diff --staged --quiet; then
+          echo "Изменений в list.json не обнаружено."
+        else
+          git commit -m "chore: автоматическое обновление list.json [skip ci]"
+          git push
+        fi
